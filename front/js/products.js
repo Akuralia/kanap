@@ -28,7 +28,7 @@ const productDescription = document.getElementById("description");
     productDescription.textContent = dataProduct.description;
 
 
-// Boucle qui va afficher les options de couleurs en fonction du produit sélectionné
+//Condition qui va vérifier la longeur du tableau afin de créer et afficher les différentes options de couleur disponible pour le produit
 
 const productColors = document.getElementById("colors");
 
@@ -39,6 +39,7 @@ for (let i = 0; i < dataProduct.colors.length; i++) {
     productColors.add(colorOption);
 }
 
+};
 
 
 
