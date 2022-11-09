@@ -65,7 +65,7 @@
                 <div class="item__content__settings__color">
                   <label for="color-select">Choisir une couleur :</label>
                   <select name="color-select" id="colors">
-                      <option value="">--SVP, choisissez une couleur --</option>
+                      <option value="default" selected disabled>--SVP, choisissez une couleur --</option>
 <!--                       <option value="vert">vert</option>
                       <option value="blanc">blanc</option> -->
                   </select>
@@ -78,7 +78,7 @@
               </div>
 
               <div class="item__content__addButton">
-                <button id="addToCart">Ajouter au panier</button>
+                <button id="addToCart" disabled>Ajouter au panier</button>
               </div>
 
             </div>
@@ -110,6 +110,7 @@
         </div>
       </div>
     </footer>
-  <script src="../js/products.js"></script>
+  <script src="../js/product.js"></script>
+  <script src="../js/cart.js"></script>
   </body>
 </html>
