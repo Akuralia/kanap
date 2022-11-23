@@ -1,6 +1,6 @@
 "use strict";
 
-// import { addBasket } from "./utils.js";
+import { getFromLocalStorage } from "./localstorage.js";
 
 const str = window.location.href; // Récupère le lien de la page actuelle
 const url = new URL(str);  // construit un UrlObject
@@ -73,45 +73,26 @@ buttonElement.addEventListener("click", addProduct);
 
 
 
-function getBasket() {
-    let basket = null;
-    let currentBasket = {
-        productId : id,
-        quantity : Number(quantityProduct.value),
-        color : selectColors.value,
-    };
-    if(localStorage.getItem("userBasket") === null) {
-        console.log("le panier n'existe pas mais est en cours de création")
-        let basket = [];
-        basket.push(currentBasket);
-        localStorage.setItem("userBasket", JSON.stringify(basket));
-        
-    } else {
-        console.log("fonction qui retourne le panier en parse")
-        return basket = JSON.parse(localStorage.getItem("userBasket"))
+function processLocalStorage(kanap) {
+    let basket = getFromLocalStorage();
+    const foundProduct = basket.find(basketProduct => basketProduct.id === id && basketProduct.color === selectColors.value);
+    console.log(foundProduct);
+
+    if(foundProduct){
+        foundProduct.quantity += kanap.quantity;
+    } else{
+        basket.push(kanap);
     }
+    localStorage.setItem("userBasket", JSON.stringify(basket));
 }
 
 function addProduct() {
-    let basket = getBasket();
-    let currentBasket = {
-        productId : id,
+    const kanap = {
+        id : id,
         quantity : Number(quantityProduct.value),
         color : selectColors.value,
     };
-    let productBasketId = basket.map (obj => obj.productId);
-    let foundProduct = basket.find((el) => el.productId === id && el.color === selectColors.value)
-    let isProductSame = foundProduct.productId === id && foundProduct.color === selectColors.value;
-    if(productBasketId != id) {
-        basket.push(currentBasket);
-        localStorage.setItem("userBasket", JSON.stringify(basket));
-        console.log("produit avec id différent ajouté");
-    } else if (isProductSame){
-        foundProduct.quantity += Number(quantityProduct.value);
-        console.log("même produit ajouté avec quantité selectionnée");
-    } else{
-        console.log("prout")
-    }
 
-    localStorage.setItem("userBasket", JSON.stringify(basket));
+    processLocalStorage(kanap);
 }
+
