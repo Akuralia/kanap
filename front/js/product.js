@@ -80,6 +80,9 @@ function processLocalStorage(kanap) {
 
     if(foundProduct){
         foundProduct.quantity += kanap.quantity;
+        if(foundProduct.quantity > 100){
+            foundProduct.quantity = 100;
+        }
     } else{
         basket.push(kanap);
     }
