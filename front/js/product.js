@@ -76,8 +76,6 @@ buttonElement.addEventListener("click", addProduct);
 function processLocalStorage(kanap) {
     let basket = getFromLocalStorage();
     const foundProduct = basket.find(basketProduct => basketProduct.id === id && basketProduct.color === selectColors.value);
-    console.log(foundProduct);
-
     if(foundProduct){
         foundProduct.quantity += kanap.quantity;
         if(foundProduct.quantity > 100){
