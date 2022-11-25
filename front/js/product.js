@@ -98,4 +98,3 @@ function addProduct() {
 
     processLocalStorage(kanap);
 }
-
