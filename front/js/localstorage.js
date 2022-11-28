@@ -5,3 +5,4 @@ export function localStorageHasKey() {
 export function getFromLocalStorage() {
     return localStorageHasKey() ? JSON.parse(localStorage.getItem("userBasket")) : [];
 }
+
