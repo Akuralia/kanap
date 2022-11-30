@@ -4,7 +4,8 @@ import { localStorageHasKey } from "./localstorage.js";
 import { getFromLocalStorage } from "./localstorage.js";
 
 displayProductBasket();
-
+let currentProductId = null;
+let currentProductColor = null;
 //  Fonction qui récupère le panier de l'utilisateur et l'affiche avec appel de l'API pour les données manquantes
 function displayProductBasket(){
     let isBasketFilled = localStorageHasKey();
@@ -22,8 +23,9 @@ function displayProductBasket(){
                 .then((apiData) => {
                     const displayProduct = document.createElement("article");
                     displayProduct.setAttribute("class", "cart__item");
-                    displayProduct.setAttribute("data-id", "{product-ID}");
-                    displayProduct.setAttribute("data-color", "{product-color}");
+                    displayProduct.setAttribute("id", "cart__item");
+                    displayProduct.setAttribute("data-id", `${kanapId}` );
+                    displayProduct.setAttribute("data-color", `${kanapColor}`);
                     displayProduct.innerHTML = `
                                 <div class="cart__item__img">
                                     <img src="${apiData.imageUrl}" alt="Photographie d'un canapé">
@@ -37,7 +39,7 @@ function displayProductBasket(){
                                     <div class="cart__item__content__settings">
                                         <div class="cart__item__content__settings__quantity">
                                             <p>Qté : </p>
-                                            <input type="number"  class="itemQuantity" name="itemQuantity" min="1" max="100" value="${kanapQuantity}">
+                                            <input type="number"  data-id="${kanapId}" data-color="${kanapColor}" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${kanapQuantity}">
                                         </div>
                                         <div class="cart__item__content__settings__delete">
                                             <p  class="deleteItem">Supprimer</p>
@@ -57,7 +59,7 @@ function displayProductBasket(){
 
                     //  Event listener pour changer la quantité d'un produit ou le supprimer 
                     document.querySelectorAll(".itemQuantity").forEach(el => el.addEventListener("change", changeQuantityFromLocalStorage));
-                    document.querySelectorAll(".deleteItem").forEach(el => el.addEventListener("click", changeQuantityFromLocalStorage));
+                    document.querySelectorAll(".deleteItem").forEach(el => el.addEventListener("click", removeFromLocalStorage));
             });
     }
     } else {
@@ -67,17 +69,14 @@ function displayProductBasket(){
 
 
 function changeQuantityFromLocalStorage(){
-    // let basket = getFromLocalStorage();
-    // let inputValue = inputQuantity.value
-    // console.log(inputValue)
-    console.log("ça marche ZEBI LA MOUCHE")
-
+    let basket = getFromLocalStorage();
+    console.log("quantité article modifiée")
 }
 
 
 
 function removeFromLocalStorage(){
-console.log("ça marche zebi")
+console.log("article supprimé")
 }
 
 
