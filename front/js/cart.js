@@ -12,7 +12,7 @@ if (basket) {
     // TODO : changer le titre panier vide
 }
 
-//  Fonction qui récupère le panier de l'utilisateur et l'affiche avec appel de l'API pour les données manquantes
+//  Fonction qui va afficher les produits de manière asynchrone
 async function init(){
     await getApiProducts();
     
@@ -26,6 +26,7 @@ async function getApiProducts() {
     );
 }
 
+// Fonction qui créer les produits et insert les infos nécessaires pour celui-ci (id, prix, couleur, quantité, nom)
 function createElement(index, productData) {
     const displayProduct = document.createElement("article");
     displayProduct.setAttribute("class", "cart__item");
@@ -57,6 +58,7 @@ function createElement(index, productData) {
     document.getElementById("cart__items").appendChild(displayProduct);
 }
 
+// Fonction qui gère l'affichage des produits avec une boucle ainsi que le prix total du panier et de la quantité totale de produit présent
 function displayProducts() {
     basket.forEach((kanap, index) => {
         let id = kanap.id;
@@ -65,10 +67,10 @@ function displayProducts() {
     
         createElement(index, { id: id, quantity: quantity, color: color });
     
-        // Calcul du total des articles dans le panier
+
         computeTotalQuantity();
     
-        // Calcul du prix total du panier
+
         computeTotalPrice();
     
         // Event listener pour changer la quantité d'un produit ou le supprimer
@@ -77,6 +79,7 @@ function displayProducts() {
     });
 }
 
+// Fonction qui calcul le prix total du panier
 function computeTotalPrice() {
     const prices = apiProducts.map(kanap => kanap.price);
     const quantities = basket.map(kanap => kanap.quantity);
@@ -84,13 +87,9 @@ function computeTotalPrice() {
     for(let i = 0; i < prices.length; i++) {
         totalPrice += prices[i] * quantities[i];
     }
-    console.log(prices)
-    console.log(quantities)
-    console.log(totalPrice)
-
     document.getElementById("totalPrice").innerHTML = totalPrice;
 }
-
+// Fonction qui calcul la quantité total de produit présent dans le panier
 function computeTotalQuantity() {
     const quantities = basket.map(kanap => kanap.quantity);
     const reducer = (accumulator, currentValue) => accumulator + currentValue;
@@ -98,6 +97,7 @@ function computeTotalQuantity() {
     document.getElementById("totalQuantity").innerHTML = quantities.reduce(reducer);
 }
 
+// Fonction qui va modifier la quantité d'un produit et recharger la page afin de recalculer le prix total du panier et la quantité total de produit
 function changeQuantityFromLocalStorage(){
     const value = Number(this.value);
     const article = this.closest('article');
@@ -106,18 +106,30 @@ function changeQuantityFromLocalStorage(){
     const object = basket.find(x => x.id === id && x.color === color);
     const objectIndex = basket.findIndex(x => x.id === id && x.color === color);
 
-    value > 100 ? object.quantity = 100 : object.quantity = value;
-
+    if(value === 0) {
+        object.quantity = 1;
+    } else if (value > 100){
+        object.quantity = 100;
+    } else{
+        object.quantity = value;
+    }
+    
     saveToLocalStorage(basket);
     window.location.reload();
 }
 
+// Fonction qui va supprimer un article dans le localStorage et le supprimer aussi de l'array apiProducts
 function removeFromLocalStorage(){
     const article = this.closest('article');
     const id = article.dataset.id;
     const color = article.dataset.color;  
     const object = basket.find(x => x.id === id && x.color === color);
     const objectIndex = basket.findIndex(x => x.id === id && x.color === color);
-
-    // TODO supprimer object dans basket et apiProduct
+    basket.splice(objectIndex,1)
+    apiProducts.splice(objectIndex,1)
+    saveToLocalStorage(basket);
+    window.location.reload();
 }
+
+// Vérfication des informations entrées par l'utilisateur et validation du formulaire de contact
+
