@@ -1,88 +1,123 @@
 "use strict";
 
-import { localStorageHasKey } from "./localstorage.js";
 import { getFromLocalStorage } from "./localstorage.js";
+import { saveToLocalStorage } from "./localstorage.js";
 
-displayProductBasket();
-let currentProductId = null;
-let currentProductColor = null;
+let basket = getFromLocalStorage();
+let apiProducts = [];
+
+if (basket) {
+    init();
+} else {
+    // TODO : changer le titre panier vide
+}
+
 //  Fonction qui récupère le panier de l'utilisateur et l'affiche avec appel de l'API pour les données manquantes
-function displayProductBasket(){
-    let isBasketFilled = localStorageHasKey();
-    let basket = getFromLocalStorage();
-    let totalBasketPrice = 0;
-    let totalBasketProduct =0;
-    if(isBasketFilled){
-        for (let i = 0; i < basket.length; i++){
-            let kanapId = basket[i].id;
-            let kanapQuantity = basket[i].quantity;
-            let kanapColor = basket[i].color;
-            let kanapUrl = 'http://localhost:3000/api/products/' + kanapId;
-            fetch(kanapUrl)
-                .then((response) => response.json())   
-                .then((apiData) => {
-                    const displayProduct = document.createElement("article");
-                    displayProduct.setAttribute("class", "cart__item");
-                    displayProduct.setAttribute("id", "cart__item");
-                    displayProduct.setAttribute("data-id", `${kanapId}` );
-                    displayProduct.setAttribute("data-color", `${kanapColor}`);
-                    displayProduct.innerHTML = `
-                                <div class="cart__item__img">
-                                    <img src="${apiData.imageUrl}" alt="Photographie d'un canapé">
-                                </div>
-                                <div class="cart__item__content">
-                                    <div class="cart__item__content__description">
-                                        <h2>${apiData.name}</h2>
-                                        <p>${kanapColor}</p>
-                                        <p>${apiData.price} €</p>
-                                    </div>
-                                    <div class="cart__item__content__settings">
-                                        <div class="cart__item__content__settings__quantity">
-                                            <p>Qté : </p>
-                                            <input type="number"  data-id="${kanapId}" data-color="${kanapColor}" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${kanapQuantity}">
-                                        </div>
-                                        <div class="cart__item__content__settings__delete">
-                                            <p  class="deleteItem">Supprimer</p>
-                                        </div>
-                                    </div>
-                                </div>  `;
-                    document.getElementById("cart__items").appendChild(displayProduct);
+async function init(){
+    await getApiProducts();
+    
+    displayProducts();
+}
 
-                    //  Calcul du total des articles dans le panier
-                    totalBasketProduct += kanapQuantity;
-                    document.getElementById("totalQuantity").innerHTML = totalBasketProduct;
+async function getApiProducts() {
+    const arrayIds = basket.map(kanap => kanap.id);
+    apiProducts = await Promise.all(
+        arrayIds.map(id => fetch(`http://localhost:3000/api/products/${id}`).then(response => response.json()))
+    );
+}
 
-                    //  Calcul du prix total du panier
-                    let totalProductPrice = apiData.price * kanapQuantity;
-                    totalBasketPrice += totalProductPrice;
-                    document.getElementById("totalPrice").innerHTML = totalBasketPrice;
+function createElement(index, productData) {
+    const displayProduct = document.createElement("article");
+    displayProduct.setAttribute("class", "cart__item");
+    displayProduct.setAttribute("id", "cart__item");
+    displayProduct.setAttribute("data-id", `${productData.id}` );
+    displayProduct.setAttribute("data-color", `${productData.color}`);
+    displayProduct.innerHTML = `
+        <div class="cart__item__img">
+            <img src="${apiProducts[index].imageUrl}" alt="Photographie d'un canapé">
+        </div>
+        <div class="cart__item__content">
+            <div class="cart__item__content__description">
+                <h2>${apiProducts[index].name}</h2>
+                <p>${productData.color}</p>
+                <p>${apiProducts[index].price} €</p>
+            </div>
+            <div class="cart__item__content__settings">
+                <div class="cart__item__content__settings__quantity">
+                    <p>Qté : </p>
+                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${productData.quantity}">
+                </div>
+                <div class="cart__item__content__settings__delete">
+                    <p  class="deleteItem">Supprimer</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById("cart__items").appendChild(displayProduct);
+}
 
-                    //  Event listener pour changer la quantité d'un produit ou le supprimer 
-                    document.querySelectorAll(".itemQuantity").forEach(el => el.addEventListener("change", changeQuantityFromLocalStorage));
-                    document.querySelectorAll(".deleteItem").forEach(el => el.addEventListener("click", removeFromLocalStorage));
-            });
+function displayProducts() {
+    basket.forEach((kanap, index) => {
+        let id = kanap.id;
+        let quantity = kanap.quantity;
+        let color = kanap.color;
+    
+        createElement(index, { id: id, quantity: quantity, color: color });
+    
+        // Calcul du total des articles dans le panier
+        computeTotalQuantity();
+    
+        // Calcul du prix total du panier
+        computeTotalPrice();
+    
+        // Event listener pour changer la quantité d'un produit ou le supprimer
+        document.querySelectorAll(".itemQuantity").forEach(el => el.addEventListener("change", changeQuantityFromLocalStorage));
+        document.querySelectorAll(".deleteItem").forEach(el => el.addEventListener("click", removeFromLocalStorage));
+    });
+}
+
+function computeTotalPrice() {
+    const prices = apiProducts.map(kanap => kanap.price);
+    const quantities = basket.map(kanap => kanap.quantity);
+    let totalPrice = 0;
+    for(let i = 0; i < prices.length; i++) {
+        totalPrice += prices[i] * quantities[i];
     }
-    } else {
-        alert("Votre panier est vide... Dommage :/")
-}
+    console.log(prices)
+    console.log(quantities)
+    console.log(totalPrice)
+
+    document.getElementById("totalPrice").innerHTML = totalPrice;
 }
 
+function computeTotalQuantity() {
+    const quantities = basket.map(kanap => kanap.quantity);
+    const reducer = (accumulator, currentValue) => accumulator + currentValue;
+    
+    document.getElementById("totalQuantity").innerHTML = quantities.reduce(reducer);
+}
 
 function changeQuantityFromLocalStorage(){
-    let basket = getFromLocalStorage();
-    console.log("quantité article modifiée")
+    const value = Number(this.value);
+    const article = this.closest('article');
+    const id = article.dataset.id;
+    const color = article.dataset.color;   
+    const object = basket.find(x => x.id === id && x.color === color);
+    const objectIndex = basket.findIndex(x => x.id === id && x.color === color);
+
+    value > 100 ? object.quantity = 100 : object.quantity = value;
+
+    saveToLocalStorage(basket);
+    window.location.reload();
 }
-
-
 
 function removeFromLocalStorage(){
-console.log("article supprimé")
+    const article = this.closest('article');
+    const id = article.dataset.id;
+    const color = article.dataset.color;  
+    const object = basket.find(x => x.id === id && x.color === color);
+    const objectIndex = basket.findIndex(x => x.id === id && x.color === color);
+
+    // TODO supprimer object dans basket et apiProduct
 }
-
-
-
-
-
-
-
-
