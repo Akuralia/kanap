@@ -1,6 +1,6 @@
 "use strict";
 
-import { getFromLocalStorage } from "./localstorage.js";
+import { getFromLocalStorage, localStorageHasKey } from "./localstorage.js";
 import { saveToLocalStorage } from "./localstorage.js";
 
 let basket = getFromLocalStorage();
@@ -60,23 +60,35 @@ function createElement(index, productData) {
 
 // Fonction qui gère l'affichage des produits avec une boucle ainsi que le prix total du panier et de la quantité totale de produit présent
 function displayProducts() {
-    basket.forEach((kanap, index) => {
-        let id = kanap.id;
-        let quantity = kanap.quantity;
-        let color = kanap.color;
+    const isLocalStorageFilled = localStorageHasKey();
+    if(isLocalStorageFilled){
+        basket.forEach((kanap, index) => {
+            let id = kanap.id;
+            let quantity = kanap.quantity;
+            let color = kanap.color;
+        
+            createElement(index, { id: id, quantity: quantity, color: color });
+        
     
-        createElement(index, { id: id, quantity: quantity, color: color });
+            computeTotalQuantity();
+        
     
+            computeTotalPrice();
+        
+            // Event listener pour changer la quantité d'un produit ou le supprimer
+            document.querySelectorAll(".itemQuantity").forEach(el => el.addEventListener("change", changeQuantityFromLocalStorage));
+            document.querySelectorAll(".deleteItem").forEach(el => el.addEventListener("click", removeFromLocalStorage));
+        });
+    } else{
+        const displayProduct = document.createElement("article");
+        displayProduct.innerHTML = `
+            <div class="cart__item__content__description">
+                <h2>Votre panier est vide</h2>
+            </div>
+        `;
+        document.getElementById("cart__items").appendChild(displayProduct);
+    }
 
-        computeTotalQuantity();
-    
-
-        computeTotalPrice();
-    
-        // Event listener pour changer la quantité d'un produit ou le supprimer
-        document.querySelectorAll(".itemQuantity").forEach(el => el.addEventListener("change", changeQuantityFromLocalStorage));
-        document.querySelectorAll(".deleteItem").forEach(el => el.addEventListener("click", removeFromLocalStorage));
-    });
 }
 
 // Fonction qui calcul le prix total du panier
