@@ -5,7 +5,7 @@ import { getFromLocalStorage } from "./localstorage.js";
 const str = window.location.href; // Récupère le lien de la page actuelle
 const url = new URL(str);  // construit un UrlObject
 const id = url.searchParams.get("id"); // récupère l'id du produit de la page afin de récupérer les données de ce produit par la suite
-const urlHost ="http://127.0.0.1:5500/front/html/product.html?id="; // à modif une fois sur gitpages
+const urlHost ="http://127.0.0.1:5501/front/html/product.html?id="; // à modif une fois sur gitpages
 const itemUrl = 'http://localhost:3000/api/products/' + id; // (à modif une fois sur gitpages mais sera la suivante : host + './api/products/') Url qui permet de faire l'appel API du produit
 
 let product = null;
