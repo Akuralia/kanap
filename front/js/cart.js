@@ -6,16 +6,18 @@ import { saveToLocalStorage } from "./localstorage.js";
 let basket = getFromLocalStorage();
 let apiProducts = [];
 
-if (basket) {
-    init();
-} else {
-    // TODO : changer le titre panier vide
-}
+init()
 
-//  Fonction qui va afficher les produits de manière asynchrone
+// if (basket) {
+//     init();
+// } else {
+
+// }
+
+//  Fonction qui va afficher les produits de manière asynchrone (on attend la fin de l'execution de l'appel api avant d'executer la fonction d'affichage des produits)
 async function init(){
     await getApiProducts();
-    
+
     displayProducts();
 }
 
@@ -67,19 +69,15 @@ function displayProducts() {
             let quantity = kanap.quantity;
             let color = kanap.color;
         
-            createElement(index, { id: id, quantity: quantity, color: color });
-        
-    
+            createElement(index, { id: id, quantity: quantity, color: color });   
             computeTotalQuantity();
-        
-    
             computeTotalPrice();
         
             // Event listener pour changer la quantité d'un produit ou le supprimer
             document.querySelectorAll(".itemQuantity").forEach(el => el.addEventListener("change", changeQuantityFromLocalStorage));
             document.querySelectorAll(".deleteItem").forEach(el => el.addEventListener("click", removeFromLocalStorage));
         });
-    } else{
+    } else {
         const displayProduct = document.createElement("article");
         displayProduct.innerHTML = `
             <div class="cart__item__content__description">
@@ -106,7 +104,7 @@ function computeTotalQuantity() {
     const quantities = basket.map(kanap => kanap.quantity);
     const reducer = (accumulator, currentValue) => accumulator + currentValue;
     
-    document.getElementById("totalQuantity").innerHTML = quantities.reduce(reducer);
+    document.getElementById("totalQuantity").innerHTML = quantities.reduce(reducer, 0);
 }
 
 // Fonction qui va modifier la quantité d'un produit et recharger la page afin de recalculer le prix total du panier et la quantité total de produit
@@ -127,7 +125,10 @@ function changeQuantityFromLocalStorage(){
     }
 
     saveToLocalStorage(basket);
-    window.location.reload();
+    computeTotalPrice();
+    computeTotalQuantity();
+
+
 }
 
 // Fonction qui va supprimer un article dans le localStorage et le supprimer aussi de l'array apiProducts
@@ -137,10 +138,14 @@ function removeFromLocalStorage(){
     const color = article.dataset.color;  
     const object = basket.find(x => x.id === id && x.color === color);
     const objectIndex = basket.findIndex(x => x.id === id && x.color === color);
-    basket.splice(objectIndex,1)
-    apiProducts.splice(objectIndex,1)
+    basket.splice(objectIndex, 1);
+    apiProducts.splice(objectIndex, 1);
+    article.remove();
+
+    computeTotalPrice();
+    computeTotalQuantity();
     saveToLocalStorage(basket);
-    window.location.reload();
+
 }
 
 // Vérfication des informations entrées par l'utilisateur et validation du formulaire de contact
@@ -154,114 +159,85 @@ const email = document.getElementById("email");
 // Regex 
 const nameRegex = /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\s-]{3,20}$/;
 const addressRegex = /^[a-zA-Z0-9áàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ._\s-]{5,120}$/;
-const cityRegex = /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ.\s-]{3,30}$/;
+const cityRegex = /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ.\s-]{10,40}$/;
 const emailRegex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/ ;
 
 // Vérification des inputs du formulaire
-// Vérification First Name
+// Event listener pour vérifier les inputs en temps réel lors du focus
+
+
+// Vérification input First Name
+
 const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
 function validateFirstName() {
-    console.log(firstName)
-    if(nameRegex.test(firstName.value) === false) {
-        console.log(nameRegex.test(firstName))
-        return false;
-    } else {
-        firstNameErrorMsg.innerHTML = null;
+    if(nameRegex.test(firstName.value)) {
+        firstNameErrorMsg.innerHTML = "";
         return true;
+    } else {
+        firstNameErrorMsg.innerHTML = "Entrez un prénom valide (sans chiffres, sans espace, seule le - est autorisé)";
+        return false;
     }
 }
 
-// Vérification Last Name
+// Vérification input Last Name
+
 const lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
 function validateLastName() {
-    console.log(lastName)
-    if(nameRegex.test(lastName.value) === false) {
-        console.log(nameRegex.test(lastName))
-        return false;
-    } else {
-        lastNameErrorMsg.innerHTML = null;
+    if(nameRegex.test(lastName.value)) {
+        firstNameErrorMsg.innerHTML = "";
         return true;
+    } else {
+        lastNameErrorMsg.innerHTML = "Entrez un nom valide (sans chiffres, sans espace, seule le '-' est autorisé)";
+        return false;
     }
 }
 
-// Vérification Address
+// Vérification input Address
+
 const addressErrorMsg = document.getElementById("addressErrorMsg");
 function validateAddress() {
-    console.log(address)
-    if(addressRegex.test(address.value) === false) {
-        console.log(addressRegex.test(address))
-        return false;
-    } else {
-        addressErrorMsg.innerHTML = null;
+    if(addressRegex.test(address.value)) {
+        firstNameErrorMsg.innerHTML = "";
         return true;
+    } else {
+        addressErrorMsg.innerHTML = "Entrez une adresse valide";
+        return false;
     }
 }
 
-// Vérification City
+// Vérification input City
+
 const cityErrorMsg = document.getElementById("cityErrorMsg");
 function validateCity() {
-    console.log(city)
-    if(cityRegex.test(city.value) === false) {
-        console.log(cityRegex.test(city))
-        return false;
-    } else {
-        cityErrorMsg.innerHTML = null;
+    if(cityRegex.test(city.value)) {
+        firstNameErrorMsg.innerHTML = "";
         return true;
+    } else {
+        cityErrorMsg.innerHTML = "Entrez une ville valide (sans chiffres, sans espace, seule le '-' est autorisé)";
+        return false;
     }
 }
 
-// Vérification Email
+// Vérification input Email
+
 const emailErrorMsg = document.getElementById("emailErrorMsg");
 function validateEmail() {
-    console.log(email)
     if(emailRegex.test(email.value) === false) {
-        console.log(emailRegex.test(email))
+        emailErrorMsg.innerHTML = "Entrez une addresse e-mail valide";
         return false;
     } else {
-        emailErrorMsg.innerHTML = null;
+        firstNameErrorMsg.innerHTML = "";
         return true;
     }
 }
+firstName.addEventListener("input", validateFirstName);
+lastName.addEventListener("input", validateLastName);
+address.addEventListener("input", validateAddress);
+city.addEventListener("input", validateCity);
+email.addEventListener("input", validateEmail);
 
-// Fonction qui va vérifier le formulaire entier et retourner un message d'erreur
 
-function validateContact() {
-    let prenom = validateFirstName();
-    let nom = validateLastName();
-    let adresse = validateAddress();
-    let ville = validateCity();
-    let mail = validateEmail();
 
-    if(prenom == false || 
-        nom == false || 
-        adresse == false || 
-        ville == false || 
-        mail == false ) {
-        if(prenom == false) {
-            firstNameErrorMsg.innerHTML = "Entrez un prénom valide (sans chiffres, sans espace, seule le '-' est autorisé)";
-            return false;
-        }
-        if(nom == false) {
-            lastNameErrorMsg.innerHTML = "Entrez un nom valide (sans chiffres, sans espace, seule le '-' est autorisé)";
-            return false;
-        }
-        if(adresse == false) {
-            addressErrorMsg.innerHTML = "Entrez une adresse valide";
-            return false;
-        }
-        if(ville == false) {
-            cityErrorMsg.innerHTML = "Entrez une ville valide (sans chiffres, sans espace, seule le '-' est autorisé)";
-            return false;
-        }
-        if(mail == false) {
-            emailErrorMsg.innerHTML = "Entrez une addresse e-mail valide";
-            return false;
-        }
-        
-    } else{
-        return true;
-    }
-}
 
 // Fonction qui va créer un objet contact avec le tableau du panier 
 function createOrderJsonData(){
@@ -272,18 +248,17 @@ function createOrderJsonData(){
         city: city.value,
         email: email.value,
     };
-    let cartItems = getFromLocalStorage();
     let products = [];
+    for (let i = 0; i < basket.length; i++) {
 
-    for (let i = 0; i < cartItems.length; i++) {
-
-        if(products.find((e) => e == cartItems[i])){
+        if(products.find((e) => e == basket[i])){
             console.log("not found");
         } else {
-            products.push(cartItems[i].id);
+            products.push(basket[i].id);
         }
     }
     let orderJsonData = JSON.stringify({ contact, products });
+    console.log(JSON.parse(orderJsonData))
     return orderJsonData;
 }
 
@@ -298,7 +273,7 @@ orderButton.addEventListener("click", (e) => {
     let orderJsonData = createOrderJsonData();
     const postUrl ="http://localhost:3000/" + "api/products/order/";
 
-    if(validateForm){
+    if(isFormValid){
         fetch(postUrl,{
             method: 'POST',
             headers: {

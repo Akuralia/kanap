@@ -1,6 +1,6 @@
 "use strict";
 
-import { getFromLocalStorage } from "./localstorage.js";
+import { getFromLocalStorage, saveToLocalStorage } from "./localstorage.js";
 
 const str = window.location.href; // Récupère le lien de la page actuelle
 const url = new URL(str);  // construit un UrlObject
@@ -84,7 +84,7 @@ function processLocalStorage(kanap) {
     } else{
         basket.push(kanap);
     }
-    localStorage.setItem("userBasket", JSON.stringify(basket));
+    saveToLocalStorage(basket);
 }
 
 function addProduct() {
