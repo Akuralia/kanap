@@ -9,3 +9,7 @@ export function getFromLocalStorage() {
 export function saveToLocalStorage(basket) {
     return localStorage.setItem("userBasket", JSON.stringify(basket));
 }
+
+
+
+
